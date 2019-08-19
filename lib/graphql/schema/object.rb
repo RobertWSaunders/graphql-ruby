@@ -131,6 +131,10 @@ module GraphQL
         def kind
           GraphQL::TypeKinds::OBJECT
         end
+
+        def object_method_alias(alias_name)
+          alias_method alias_name, :object
+        end
       end
     end
   end

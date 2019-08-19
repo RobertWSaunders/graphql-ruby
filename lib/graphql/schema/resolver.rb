@@ -314,6 +314,10 @@ module GraphQL
           arg_defn
         end
 
+        def object_method_alias(alias_name)
+          alias_method alias_name, :object
+        end
+
         # @api private
         def arguments_loads_as_type
           inherited_lookups = superclass.respond_to?(:arguments_loads_as_type) ? superclass.arguments_loads_as_type : {}

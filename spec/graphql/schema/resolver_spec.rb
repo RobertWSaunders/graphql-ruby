@@ -65,6 +65,20 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithObjectAlias < BaseResolver
+      object_method_alias :test
+
+      type String, null: false
+
+      def resolve
+        test[:bar]
+      end
+    end
+
+    class Foo < GraphQL::Schema::Object
+      field :bar, resolver: ResolverWithObjectAlias
+    end
+
     class Resolver5 < Resolver4
     end
 
@@ -377,6 +391,7 @@ describe GraphQL::Schema::Resolver do
       field :resolver_7, resolver: Resolver7
       field :resolver_8, resolver: Resolver8
       field :resolver_with_path, resolver: ResolverWithPath
+      field :resolver_with_object_alias, Foo, null: false
 
       field :prep_resolver_1, resolver: PrepResolver1
       field :prep_resolver_2, resolver: PrepResolver2
@@ -393,6 +408,12 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_13, resolver: PrepResolver13
       field :prep_resolver_14, resolver: PrepResolver14
       field :resolver_with_error_handler, resolver: ResolverWithErrorHandler
+
+      def resolver_with_object_alias
+        {
+          bar: "test"
+        }
+      end
     end
 
     class Schema < GraphQL::Schema
@@ -432,6 +453,11 @@ describe GraphQL::Schema::Resolver do
       r = ResolverTest::Resolver1.new(object: nil, context: nil)
       assert_equal "Resolver1", r.path
     end
+  end
+
+  it "resolves with an object alias" do
+    res = exec_query " { resolverWithObjectAlias { bar } }"
+    assert_equal "test", res["data"]["resolverWithObjectAlias"]["bar"]
   end
 
   it "gets initialized for each resolution" do

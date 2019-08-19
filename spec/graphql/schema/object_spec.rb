@@ -352,4 +352,47 @@ describe GraphQL::Schema::Object do
       end
     end
   end
+
+  describe "object_method_alias" do
+    class TestObjectAliasSchema < GraphQL::Schema
+      class Foo < GraphQL::Schema::Object
+        object_method_alias :test
+
+        field :bar, String, null: false
+        field :bar1, String, null: false
+
+        def bar
+          test[:bar]
+        end
+
+        def bar1
+          object[:bar]
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :foo, Foo, null: false
+
+        def foo
+          {
+            bar: "test"
+          }
+        end
+      end
+
+      query(Query)
+    end
+
+    it "resolves using object method alias" do
+      res = TestObjectAliasSchema.execute('{ foo { bar } }')
+
+      assert_equal "test", res["data"]["foo"]["bar"]
+    end
+
+    it "resolves using object method" do
+      res = TestObjectAliasSchema.execute('{ foo { bar1 } }')
+
+      assert_equal "test", res["data"]["foo"]["bar1"]
+    end
+  end 
 end
